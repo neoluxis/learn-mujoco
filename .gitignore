@@ -1,0 +1,10 @@
+__pycache__
+*.pyc
+
+*.zip
+logs/
+models/
+*.npz
+*.png
+results/
+

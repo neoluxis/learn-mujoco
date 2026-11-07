@@ -1,0 +1,178 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+
+<mujoco model="cart_pole">
+
+    <!-- =====================================================
+         1. 仿真参数
+         ===================================================== -->
+
+    <compiler angle="radian"
+              coordinate="local"
+              inertiafromgeom="true"/>
+
+    <option timestep="0.002"
+            gravity="0 0 -9.81"
+            integrator="RK4"/>
+
+    <!-- =====================================================
+         2. 默认属性
+         ===================================================== -->
+
+    <default>
+
+        <!-- 关节默认参数 -->
+        <joint damping="0.05"
+               armature="0.001"
+               frictionloss="0.0"/>
+
+        <!-- 几何体默认参数 -->
+        <geom condim="3"
+              friction="1.0 0.1 0.1"
+              density="700"/>
+
+    </default>
+
+    <!-- =====================================================
+         3. 资源
+         ===================================================== -->
+
+    <asset>
+
+        <texture name="ground_texture"
+                 type="2d"
+                 builtin="checker"
+                 width="512"
+                 height="512"
+                 rgb1="0.25 0.3 0.35"
+                 rgb2="0.15 0.2 0.25"/>
+
+        <material name="ground_material"
+                  texture="ground_texture"
+                  texrepeat="5 5"
+                  reflectance="0.2"/>
+
+    </asset>
+
+    <!-- =====================================================
+         4. 世界坐标系
+         ===================================================== -->
+
+    <worldbody>
+
+        <!-- 地面 -->
+        <geom name="ground"
+              type="plane"
+              pos="0 0 0"
+              size="5 5 0.1"
+              material="ground_material"/>
+
+        <!-- =================================================
+             水平滑轨
+             ================================================= -->
+
+        <geom name="rail"
+              type="box"
+              pos="0 0 0.08"
+              size="1.5 0.04 0.04"
+              rgba="0.3 0.3 0.3 1"
+              contype="0"
+              conaffinity="0"/>
+
+        <!-- =================================================
+             滑块 Cart
+             ================================================= -->
+
+        <body name="cart"
+              pos="0 0 0.2">
+
+            <!--
+                直线运动关节：
+                axis = X 方向
+                qpos[0] 表示滑块的水平位置
+                qvel[0] 表示滑块的水平速度
+            -->
+            <joint name="cart_slide"
+                   type="slide"
+                   axis="1 0 0"
+                   range="-1.2 1.2"
+                   limited="true"/>
+
+            <!-- 滑块本体 -->
+            <geom name="cart_geom"
+                  type="box"
+                  size="0.18 0.12 0.08"
+                  rgba="0.2 0.4 0.9 1"
+                  mass="1.0"/>
+
+            <!-- =================================================
+                 摆杆 Pole
+                 ================================================= -->
+
+            <body name="pole"
+                  pos="0 0 0.08">
+
+                <!--
+                    转动关节：
+                    绕 Y 轴旋转
+                    因此摆杆只能在 X-Z 平面运动。
+
+                    qpos[1] 表示摆杆角度
+                    qvel[1] 表示摆杆角速度
+
+                    初始角度为 0 时，摆杆竖直向上。
+                -->
+                <joint name="pole_hinge"
+                       type="hinge"
+                       axis="0 1 0"
+                       range="-90 90"
+                       limited="true"/>
+
+                <!--
+                    摆杆几何体：
+                    长度 1.0 m
+                    半径 0.035 m
+                    从关节位置沿局部 Z 轴向上延伸
+                -->
+                <geom name="pole_geom"
+                      type="capsule"
+                      fromto="0 0 0 0 0 1.0"
+                      size="0.035"
+                      rgba="0.9 0.3 0.2 1"
+                      mass="0.2"/>
+
+                <!-- 摆杆顶部标记 -->
+                <geom name="pole_tip"
+                      type="sphere"
+                      pos="0 0 1.0"
+                      size="0.055"
+                      rgba="0.2 0.9 0.3 1"
+                      contype="0"
+                      conaffinity="0"/>
+
+            </body>
+
+        </body>
+
+    </worldbody>
+
+    <!-- =====================================================
+         5. 执行器
+         ===================================================== -->
+
+    <actuator>
+
+        <!--
+            对滑块施加沿 X 轴的驱动力。
+            ctrl 表示输入力，单位为 N。
+            这里限制最大驱动力为 20 N。
+        -->
+        <motor name="cart_motor"
+               joint="cart_slide"
+               gear="1"
+               ctrllimited="true"
+               ctrlrange="-20 20"/>
+
+    </actuator>
+
+</mujoco>

@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "MuJoCo",
+            "type": "debugpy",
+            "request": "launch",
+            "python": ".venv/bin/mjpython",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        }
+    ]
+}
