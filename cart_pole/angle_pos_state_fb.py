@@ -9,6 +9,15 @@ from envs.mujoco import MujocoEnv
 from utils.plots import plot_curves
 from controller.state_fb import StateFeedbackController
 
+def angle_norm(theta, mode='deg'):
+    if mode == 'deg':
+        t = theta
+    elif mode == 'rad':
+        t = np.rad2deg(theta)
+    else:
+        raise Exception("Mode: deg or rad")
+    t = t % 360 - 180
+    return t if mode == 'deg' else np.deg2rad(t)
 
 XML_PATH = Path("cart_pole/cart_pole.xml")
 
@@ -18,7 +27,7 @@ MAX_FORCE = 20.0
 
 # 初始状态
 INIT_X = 0
-INIT_THETA = np.deg2rad(5)
+INIT_THETA = np.deg2rad(165)
 
 # 位置参考值
 X_REF = 0
@@ -68,7 +77,7 @@ def main():
             state = env.get_state()
 
             x = state["qpos"][0]
-            theta = state["qpos"][1]
+            theta = angle_norm(state["qpos"][1], 'rad')
 
             x_dot = state["qvel"][0]
             theta_dot = state["qvel"][1]
